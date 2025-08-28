@@ -26,6 +26,17 @@
             perspective: 1000px;
         }
         
+        .login-screen {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        
         .terminal {
             width: 100%;
             max-width: 500px;
@@ -38,34 +49,11 @@
             transition: transform 0.8s;
             transform-style: preserve-3d;
             position: relative;
+            display: none;
         }
         
         .terminal.flipped {
-            transform: rotateY(180deg);
-        }
-        
-        .terminal-front, .terminal-back {
-            backface-visibility: hidden;
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            padding: 30px;
-        }
-        
-        .terminal-back {
-            transform: rotateY(180deg);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        
-        h1 {
-            font-weight: 700;
-            font-size: 28px;
-            margin-bottom: 30px;
-            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            transform: rotate(180deg);
         }
         
         .screen {
@@ -93,6 +81,16 @@
             font-weight: 500;
             margin: 15px 0;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
         
         button {
@@ -314,115 +312,120 @@
             color: #81ecec;
             opacity: 0.8;
         }
+        
+        .error-message {
+            color: #ff7675;
+            margin: 10px 0;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
-    <div class="terminal" id="terminal">
-        <div class="terminal-front">
-            <h1>ПЛАТЕЖНЫЙ ТЕРМИНАЛ</h1>
-            
-            <div class="screen">
-                <div id="content">
-                    <div id="amount-screen">
-                        <div class="status">Введите сумму оплаты в рублях</div>
-                        <input type="number" id="amount-input" placeholder="0 ₽" min="1">
-                        
-                        <div class="payment-options">
-                            <div class="payment-option active" id="card-option" onclick="selectPayment('card')">
-                                💳 Картой
-                            </div>
-                            <div class="payment-option" id="qr-option" onclick="selectPayment('qr')">
-                                📱 QR-код
-                            </div>
-                        </div>
-                        
-                        <button onclick="processPayment()">ПРОДОЛЖИТЬ</button>
-                    </div>
-                    
-                    <div id="card-wait-screen" class="hidden">
-                        <div class="card-icon">💳</div>
-                        <div class="status">Поднесите карту к терминалу</div>
-                        <div class="contactless-icon">📱</div>
-                        <div class="amount-display" id="wait-amount"></div>
-                    </div>
-                    
-                    <div id="card-processing-screen" class="hidden">
-                        <div class="status">Подключение к серверу...</div>
-                    </div>
-                    
-                    <div id="card-bank-screen" class="hidden">
-                        <div class="status">Связь с банком...</div>
-                    </div>
-                    
-                    <div id="card-pin-screen" class="hidden">
-                        <div class="card-icon">💳</div>
-                        <div class="status">Введите PIN-код карты</div>
-                        <div class="pin-container">
-                            <input type="password" maxlength="1" class="pin-digit" id="pin1" oninput="moveToNext(1)">
-                            <input type="password" maxlength="1" class="pin-digit" id="pin2" oninput="moveToNext(2)">
-                            <input type="password" maxlength="1" class="pin-digit" id="pin3" oninput="moveToNext(3)">
-                            <input type="password" maxlength="1" class="pin-digit" id="pin4" oninput="processPin()">
-                        </div>
-                        <div class="amount-display" id="pin-amount"></div>
-                    </div>
-                    
-                    <div id="card-final-processing" class="hidden">
-                        <div class="status">Связь с банком...</div>
-                    </div>
-                    
-                    <div id="qr-screen" class="hidden">
-                        <div class="status">Оплата по QR-коду</div>
-                        <div class="instructions">Отсканируйте код для оплаты</div>
-                        
-                        <div class="qr-wrapper">
-                            <div class="qr-container">
-                                <canvas id="qrcode"></canvas>
-                            </div>
-                            <div class="scanner-animation"></div>
-                        </div>
-                        
-                        <div class="amount-display" id="qr-amount"></div>
-                        <div class="countdown" id="countdown">Ожидание оплаты: 60 сек</div>
-                        <div class="payment-id" id="payment-id-display"></div>
-                    </div>
-                    
-                    <div id="success-screen" class="hidden">
-                        <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                            <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
-                            <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                        </svg>
-                        <div class="success">Успешно совершен платеж</div>
-                        <div class="amount-display" id="success-amount"></div>
-                        <button onclick="resetToAmountScreen()">НОВЫЙ ПЛАТЕЖ</button>
-                    </div>
-                </div>
+    <div class="login-screen" id="login-screen">
+        <div class="screen">
+            <div class="card-icon">🔒</div>
+            <div class="status">Введите пароль доступа</div>
+            <div class="pin-container">
+                <input type="password" maxlength="1" class="pin-digit" id="login-pin1" oninput="moveLoginNext(1)" onkeypress="return isNumberKey(event)">
+                <input type="password" maxlength="1" class="pin-digit" id="login-pin2" oninput="moveLoginNext(2)" onkeypress="return isNumberKey(event)">
+                <input type="password" maxlength="1" class="pin-digit" id="login-pin3" oninput="moveLoginNext(3)" onkeypress="return isNumberKey(event)">
+                <input type="password" maxlength="1" class="pin-digit" id="login-pin4" oninput="checkLoginPin()" onkeypress="return isNumberKey(event)">
             </div>
-            
-            <button class="flip-button" onclick="flipTerminal()">СКАНИРОВАТЬ QR-КОД</button>
-            
-            <div class="footer">
-                © 2025 Платежная система | Безопасные транзакции
+            <div id="login-error" class="error-message hidden">Неверный пароль</div>
+        </div>
+        
+        <div class="footer">
+            © 2025 Платежная система | Безопасные транзакции
+        </div>
+    </div>
+    
+    <div class="terminal" id="terminal">
+        <div class="screen">
+            <div id="content">
+                <div id="amount-screen">
+                    <div class="status">Введите сумму оплаты в рублях</div>
+                    <input type="number" id="amount-input" placeholder="0 ₽" min="1" onkeypress="return isNumberKey(event)">
+                    
+                    <div class="payment-options">
+                        <div class="payment-option active" id="card-option" onclick="selectPayment('card')">
+                            💳 Картой
+                        </div>
+                        <div class="payment-option" id="qr-option" onclick="selectPayment('qr')">
+                            📱 QR-код
+                        </div>
+                    </div>
+                    
+                    <button onclick="processPayment()">ПРОДОЛЖИТЬ</button>
+                </div>
+                
+                <div id="card-wait-screen" class="hidden">
+                    <div class="card-icon">💳</div>
+                    <div class="status">Поднесите карту к терминалу</div>
+                    <div class="contactless-icon">📱</div>
+                    <div class="amount-display" id="wait-amount"></div>
+                </div>
+                
+                <div id="card-processing-screen" class="hidden">
+                    <div class="status">Подключение к серверу...</div>
+                </div>
+                
+                <div id="card-bank-screen" class="hidden">
+                    <div class="status">Связь с банком...</div>
+                </div>
+                
+                <div id="card-pin-screen" class="hidden">
+                    <div class="card-icon">💳</div>
+                    <div class="status">Введите PIN-код карты</div>
+                    <div class="pin-container">
+                        <input type="password" maxlength="1" class="pin-digit" id="pin1" oninput="moveToNext(1)" onkeypress="return isNumberKey(event)">
+                        <input type="password" maxlength="1" class="pin-digit" id="pin2" oninput="moveToNext(2)" onkeypress="return isNumberKey(event)">
+                        <input type="password" maxlength="1" class="pin-digit" id="pin3" oninput="moveToNext(3)" onkeypress="return isNumberKey(event)">
+                        <input type="password" maxlength="1" class="pin-digit" id="pin4" oninput="processPin()" onkeypress="return isNumberKey(event)">
+                    </div>
+                    <div class="amount-display" id="pin-amount"></div>
+                </div>
+                
+                <div id="card-final-processing" class="hidden">
+                    <div class="status">Связь с банком...</div>
+                </div>
+                
+                <div id="qr-screen" class="hidden">
+                    <div class="status">Оплата по QR-коду</div>
+                    <div class="instructions">Отсканируйте код для оплаты</div>
+                    
+                    <div class="qr-wrapper">
+                        <div class="qr-container">
+                            <canvas id="qrcode"></canvas>
+                        </div>
+                        <div class="scanner-animation"></div>
+                    </div>
+                    
+                    <div class="amount-display" id="qr-amount"></div>
+                    <div class="countdown" id="countdown">Ожидание оплаты: 60 сек</div>
+                    <div class="payment-id" id="payment-id-display"></div>
+                </div>
+                
+                <div id="success-screen" class="hidden">
+                    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                        <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
+                        <path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                    </svg>
+                    <div class="success">Успешно совершен платеж</div>
+                    <div class="amount-display" id="success-amount"></div>
+                    <button onclick="resetToAmountScreen()">НОВЫЙ ПЛАТЕЖ</button>
+                </div>
             </div>
         </div>
         
-        <div class="terminal-back">
-            <h1>СКАНИРОВАНИЕ QR-КОДА</h1>
-            
-            <div class="screen">
-                <div class="status">Наведите камеру на QR-код</div>
-                <div class="card-icon">📷</div>
-                <div class="instructions">Для оплаты отсканируйте QR-код с терминала</div>
-            </div>
-            
-            <button class="flip-button" onclick="flipTerminal()">ВЕРНУТЬСЯ К ТЕРМИНАЛУ</button>
-            
-            <div class="footer">
-                © 2025 Платежная система | Безопасные транзакции
-            </div>
+        <button class="flip-button" onclick="flipTerminal()">Повернуть экран</button>
+        
+        <div class="footer">
+            © 2025 Платежная система | Безопасные транзакции
         </div>
     </div>
 
     <script>
+        const TERMINAL_PASSWORD = "0902";
         let paymentAmount = 0;
         let paymentMethod = 'card';
         let countdownInterval;
@@ -440,7 +443,6 @@
         if (success && amount && id) {
             document.body.innerHTML = `
                 <div class="terminal">
-                    <h1>ПЛАТЕЖНЫЙ ТЕРМИНАЛ</h1>
                     <div class="screen">
                         <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                             <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
@@ -458,6 +460,67 @@
             
             // Сохраняем статус оплаты в localStorage
             localStorage.setItem(`payment_${id}`, 'completed');
+            
+            // Если терминал открыт на другом устройстве, обновляем его статус
+            if (typeof window.opener !== 'undefined' && window.opener !== null) {
+                try {
+                    window.opener.postMessage({type: 'paymentSuccess', id: id}, '*');
+                } catch (e) {
+                    console.log("Не удалось уведомить родительское окно");
+                }
+            }
+        }
+        
+        // Обработчик сообщений для обновления статуса платежа
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'paymentSuccess' && event.data.id === paymentId) {
+                clearInterval(countdownInterval);
+                showSuccessScreen();
+            }
+        });
+        
+        // Проверка пароля для доступа к терминалу
+        function checkLoginPin() {
+            const pin4 = document.getElementById('login-pin4');
+            if (pin4.value.length === 1) {
+                const enteredPin = document.getElementById('login-pin1').value + 
+                                  document.getElementById('login-pin2').value + 
+                                  document.getElementById('login-pin3').value + 
+                                  pin4.value;
+                
+                if (enteredPin === TERMINAL_PASSWORD) {
+                    // Правильный пароль
+                    document.getElementById('login-screen').style.display = 'none';
+                    document.getElementById('terminal').style.display = 'block';
+                } else {
+                    // Неправильный пароль
+                    document.getElementById('login-error').classList.remove('hidden');
+                    
+                    // Сброс полей ввода
+                    document.getElementById('login-pin1').value = '';
+                    document.getElementById('login-pin2').value = '';
+                    document.getElementById('login-pin3').value = '';
+                    document.getElementById('login-pin4').value = '';
+                    document.getElementById('login-pin1').focus();
+                }
+            }
+        }
+        
+        function moveLoginNext(current) {
+            const currentInput = document.getElementById('login-pin' + current);
+            if (currentInput.value.length === 1) {
+                if (current < 4) {
+                    document.getElementById('login-pin' + (current + 1)).focus();
+                }
+            }
+        }
+        
+        function isNumberKey(evt) {
+            const charCode = (evt.which) ? evt.which : evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+                return false;
+            }
+            return true;
         }
         
         function selectPayment(method) {
@@ -661,15 +724,8 @@
             document.getElementById('terminal').classList.toggle('flipped');
         }
         
-        // Автофокус на поле ввода суммы
-        document.getElementById('amount-input').focus();
-        
-        // Обработка нажатия Enter в поле суммы
-        document.getElementById('amount-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                processPayment();
-            }
-        });
+        // Автофокус на поле ввода пароля
+        document.getElementById('login-pin1').focus();
     </script>
 </body>
 </html>
